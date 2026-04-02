@@ -1,7 +1,9 @@
 package com.memoeslink.common;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -15,662 +17,813 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RandomizerTest {
 
-    @Test
-    void getSeedAsNull(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        assertNull(r.getSeed());
-        System.out.println(testInfo.getDisplayName() + " -> " + r.getSeed());
-    }
-
-    @Test
-    void getSeedAsLong(TestInfo testInfo) {
-        Randomizer r = new Randomizer(0L);
-        assertNotNull(r.getSeed());
-        System.out.println(testInfo.getDisplayName() + " -> " + r.getSeed());
-    }
-
-    @Test
-    void bindSeedAsNull(TestInfo testInfo) {
-        Randomizer r = new Randomizer(0L);
-        r.bindSeed(null);
-        assertNull(r.getSeed());
-        System.out.println(testInfo.getDisplayName() + " -> " + r.getSeed());
-    }
-
-    @Test
-    void bindSeedAsLong(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        r.bindSeed(0L);
-        assertNotNull(r.getSeed());
-        System.out.println(testInfo.getDisplayName() + " -> " + r.getSeed());
-    }
-
-    @Test
-    void unbindSeed(TestInfo testInfo) {
-        Randomizer r = new Randomizer(0L);
-        r.unbindSeed();
-        assertNull(r.getSeed());
-        System.out.println(testInfo.getDisplayName() + " -> " + r.getSeed());
-    }
-
-    @Test
-    void getBoolean(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        boolean value = r.getBoolean();
-        assertNotNull(value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getInt(TestInfo testInfo) {
-        Randomizer r = new Randomizer(15212817L);
-        int value = r.getInt();
-        assertTrue(Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getInt(100);
-        assertTrue(0 <= value && value < 100);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntFromZeroBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getInt(0);
-        assertEquals(0, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntFromNegativeBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getInt(-10);
-        assertEquals(0, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getInt(-15, -10);
-        assertTrue(-15 <= value && value < -10);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntFromOriginWithLesserBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getInt(-15, -25);
-        assertEquals(0, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getIntInRange(-5, 5);
-        assertTrue(-5 <= value && value <= 5);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntInRangeAsPositive(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getIntInRange(20, 30);
-        assertTrue(20 <= value && value <= 30);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntInRangeAsNegative(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getIntInRange(-10, -5);
-        assertTrue(-10 <= value && value <= -5);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntInRangeWithEqualLimits(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getIntInRange(-10, -10);
-        assertEquals(-10, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getIntInRangeWithLesserMax(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getIntInRange(-10, -15);
-        assertEquals(0, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getInts(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Integer> values = r.getInts(10);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getIntsFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Integer> values = r.getInts(10, 10);
-        assertTrue(values.stream().allMatch(value -> 0 <= value && value < 10));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getIntsFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Integer> values = r.getInts(10, -100, 100);
-        assertTrue(values.stream().allMatch(value -> -100 <= value && value < 100));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getIntsInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Integer> values = r.getIntsInRange(10, -5, 5);
-        assertTrue(values.stream().allMatch(value -> -5 <= value && value <= 5));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getLong(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong();
-        assertTrue(Long.MIN_VALUE <= value && value <= Long.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong(100L);
-        assertTrue(0L <= value && value < 100L);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongFromZeroBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong(0L);
-        assertEquals(0L, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongFromNegativeBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong(-10L);
-        assertEquals(0L, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong(-15L, -10L);
-        assertTrue(-15L <= value && value < -10L);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongFromOriginWithLesserBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLong(-15L, -25L);
-        assertEquals(0L, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLongInRange(-5L, 5L);
-        assertTrue(-5L <= value && value <= 5L);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongInRangeAsPositive(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLongInRange(20L, 30L);
-        assertTrue(20L <= value && value <= 30L);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongInRangeAsNegative(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLongInRange(-10L, -5L);
-        assertTrue(-10L <= value && value <= -5L);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongInRangeWithEqualLimits(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLongInRange(-10L, -10L);
-        assertEquals(-10L, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongInRangeWithLesserMax(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        long value = r.getLongInRange(-10L, -15L);
-        assertEquals(0L, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getLongs(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Long> values = r.getLongs(10);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> Long.MIN_VALUE <= value && value <= Long.MAX_VALUE));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getLongsFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Long> values = r.getLongs(10, 10);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> 0L <= value && value < 10L));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getLongsFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Long> values = r.getLongs(10, -100L, 100L);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -100L <= value && value < 100L));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getLongsInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Long> values = r.getLongsInRange(10, -5L, 5L);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -5L <= value && value <= 5L));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getFloat(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat();
-        assertTrue(0.0F <= value && value <= 1.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat(100.0F);
-        assertTrue(0.0F <= value && value < 100.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatFromZeroBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat(0.0F);
-        assertEquals(0.0F, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatFromNegativeBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat(-10.0F);
-        assertEquals(0.0F, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat(-15.0F, -10.0F);
-        assertTrue(-15.0F <= value && value < -10.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatFromOriginWithLesserBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloat(-15.0F, -25.0F);
-        assertEquals(0.0F, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloatInRange(-5.0F, 5.0F);
-        assertTrue(-5.0F <= value && value <= 5.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatInRangeAsPositive(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloatInRange(20.0F, 30.0F);
-        assertTrue(20.0F <= value && value <= 30.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatInRangeAsNegative(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloatInRange(-10.0F, -5.0F);
-        assertTrue(-10.0F <= value && value <= -5.0F);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatInRangeWithEqualLimits(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloatInRange(-10.0F, -10.0F);
-        assertEquals(-10.0F, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloatInRangeWithLesserMax(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        float value = r.getFloatInRange(-10.0F, -15.0F);
-        assertEquals(0.0F, r.getFloatInRange(-10.0F, -15.0F));
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getFloats(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Float> values = r.getFloats(10);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> 0.0F <= value && value <= 1.0F));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getFloatsFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Float> values = r.getFloats(10, 100.0F);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> 0.0F <= value && value < 100.0F));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getFloatsFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Float> values = r.getFloats(10, -15.0F, 10.0F);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -15.0F <= value && value < 10.0F));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getFloatsInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Float> values = r.getFloatsInRange(20, -2.5F, 11.25F);
-        assertEquals(20, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -2.5F <= value && value <= 11.25F));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getDouble(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble();
-        assertTrue(0.0D <= value && value <= 1.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(100.0D);
-        assertTrue(0.0D <= value && value < 100.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleFromZeroBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(0.0D);
-        assertEquals(0.0D, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleFromNegativeBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(-10.0D);
-        assertEquals(0.0D, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(-15.0D, -10.0D);
-        assertTrue(-15.0D <= value && value < -10.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleFromOriginWithLesserBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(-15.0D, -25.0D);
-        assertEquals(0.0D, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDoubleInRange(-5.0D, 5.0D);
-        assertTrue(-5.0D <= value && value <= 5.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleInRangeAsPositive(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDouble(20.0D, 30.0D);
-        assertTrue(20.0D <= value && value <= 30.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleInRangeAsNegative(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDoubleInRange(-10.0D, -5.0D);
-        assertTrue(-10.0D <= value && value <= -5.0D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleInRangeWithEqualLimits(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDoubleInRange(-10.0D, -10.0D);
-        assertEquals(-10.0D, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubleInRangeWithLesserMax(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getDoubleInRange(-10.0D, -15.0D);
-        assertEquals(0.0D, value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getDoubles(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Double> values = r.getDoubles(10);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> 0.0D <= value && value <= 1.0D));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getDoublesFromBound(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Double> values = r.getDoubles(10, 10.0D);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> 0.0D <= value && value < 10.0D));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getDoublesFromOrigin(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Double> values = r.getDoubles(10, -15.0D, 10.0D);
-        assertEquals(10, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -15.0D <= value && value < 10.0D));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getDoublesInRange(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Double> values = r.getDoublesInRange(20, -2.5D, 11.25D);
-        assertEquals(20, values.size());
-        assertTrue(values.stream().allMatch(Objects::nonNull));
-        assertTrue(values.stream().allMatch(value -> -2.5D <= value && value <= 11.25D));
-        System.out.println(testInfo.getDisplayName() + " -> " + values);
-    }
-
-    @Test
-    void getGaussian(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getGaussian();
-        assertTrue(-Double.MAX_VALUE <= value && value <= Double.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getGaussianWithStdDeviation(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getGaussian(10.0D, 2.0D);
-        assertTrue(-Double.MAX_VALUE <= value && value <= Double.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getGaussianWithConstraint(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        double value = r.getGaussian(10.0D, 2.0D, 11.5D);
-        assertTrue(-Double.MAX_VALUE <= value && value <= 11.5D);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getGaussianInt(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getGaussianInt();
-        assertTrue(Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getGaussianIntWithStdDeviation(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getGaussianInt(10.0D, 2.0D);
-        assertTrue(Integer.MIN_VALUE <= value && value <= Integer.MAX_VALUE);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getGaussianIntWithConstraint(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        int value = r.getGaussianInt(10.0D, 2.0D, 11);
-        assertTrue(Integer.MIN_VALUE <= value && value <= 11);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getCharBasedOnWeight(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        WeightedChar[] values = new WeightedChar[]{new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
-        char value = r.getCharBasedOnWeight(values);
-        assertNotNull(value);
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
-    }
-
-    @Test
-    void getElementInArray(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        String[] values = {"test", "sample"};
-        String element = r.getElement(values);
-        assertTrue(List.of(values).contains(element));
-        System.out.println(testInfo.getDisplayName() + " -> " + element);
-    }
-
-    @Test
-    void getElementInList(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        List<Integer> values = IntStream.rangeClosed(1, 1000)
-                .boxed()
-                .collect(Collectors.toList());
-        int element = r.getElement(values);
-        assertTrue(values.contains(element));
-        System.out.println(testInfo.getDisplayName() + " -> " + element);
-    }
-
-    @Test
-    void getElementInSet(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        Set<Integer> values = IntStream.rangeClosed(1, 1000)
-                .boxed()
-                .collect(Collectors.toSet());
-        int element = r.getElement(values);
-        assertTrue(values.contains(element));
-        System.out.println(testInfo.getDisplayName() + " -> " + element);
-    }
-
-    @Test
-    void getElementInMap(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        Map<Integer, Integer> values = IntStream.rangeClosed(1, 1000)
-                .boxed()
-                .collect(Collectors.toMap(i -> i, i -> i));
-        int element = r.getElement(values);
-        assertNotNull(values.getOrDefault(element, null));
-        System.out.println(testInfo.getDisplayName() + " -> " + element);
-    }
-
-    @Test
-    void getEnum(TestInfo testInfo) {
-        Randomizer r = new Randomizer();
-        DayOfWeek value = r.getEnum(DayOfWeek.class);
-        assertTrue(List.of(DayOfWeek.values()).contains(value));
-        System.out.println(testInfo.getDisplayName() + " -> " + value);
+    @Nested
+    class GetSeed {
+
+        @Test
+        void withDefaultConstructor_returnsNull() {
+            assertNull(new Randomizer().getSeed());
+        }
+
+        @Test
+        void withSeededConstructor_returnsNonNull() {
+            assertNotNull(new Randomizer(0L).getSeed());
+        }
+    }
+
+    @Nested
+    class BindSeed {
+
+        @Test
+        void withNull_clearsSeed() {
+            Randomizer r = new Randomizer(0L);
+            r.bindSeed(null);
+            assertNull(r.getSeed());
+        }
+
+        @Test
+        void withLong_setsSeed() {
+            Randomizer r = new Randomizer();
+            r.bindSeed(0L);
+            assertNotNull(r.getSeed());
+        }
+    }
+
+    @Nested
+    class UnbindSeed {
+
+        @Test
+        void withSeededRandomizer_clearsSeed() {
+            Randomizer r = new Randomizer(0L);
+            r.unbindSeed();
+            assertNull(r.getSeed());
+        }
+    }
+
+    @Nested
+    class GetBoolean {
+
+        @Test
+        void withNoSeed_returnsBothValuesEventually() {
+            Randomizer r = new Randomizer();
+            List<Boolean> values = IntStream.range(0, 100).mapToObj(i -> r.getBoolean()).toList();
+            assertTrue(values.contains(true));
+            assertTrue(values.contains(false));
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalSequence() {
+            Randomizer r1 = new Randomizer(42L);
+            Randomizer r2 = new Randomizer(42L);
+            List<Boolean> seq1 = IntStream.range(0, 20).mapToObj(i -> r1.getBoolean()).collect(Collectors.toList());
+            List<Boolean> seq2 = IntStream.range(0, 20).mapToObj(i -> r2.getBoolean()).collect(Collectors.toList());
+            assertEquals(seq1, seq2);
+        }
+    }
+
+    @Nested
+    class GetInt {
+
+        @Test
+        void withNoArgs_doesNotThrow() {
+            assertDoesNotThrow(() -> new Randomizer().getInt());
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getInt(), new Randomizer(42L).getInt());
+        }
+
+        @Nested
+        class WithBound {
+
+            @Test
+            void withPositiveBound_returnsValueInRange() {
+                int value = new Randomizer().getInt(100);
+                assertTrue(0 <= value && value < 100);
+            }
+
+            @ParameterizedTest
+            @ValueSource(ints = {0, -1, -100})
+            void withNonPositiveBound_returnsZero(int bound) {
+                assertEquals(0, new Randomizer().getInt(bound));
+            }
+        }
+
+        @Nested
+        class WithOrigin {
+
+            @Test
+            void withValidOriginAndBound_returnsValueInRange() {
+                int value = new Randomizer().getInt(-15, -10);
+                assertTrue(-15 <= value && value < -10);
+            }
+
+            @Test
+            void withBoundLesserThanOrigin_returnsZero() {
+                assertEquals(0, new Randomizer().getInt(-15, -25));
+            }
+        }
+    }
+
+    @Nested
+    class GetIntInRange {
+
+        @Test
+        void withNegativeAndPositiveLimits_returnsValueInRange() {
+            int value = new Randomizer().getIntInRange(-5, 5);
+            assertTrue(-5 <= value && value <= 5);
+        }
+
+        @Test
+        void withPositiveLimits_returnsValueInRange() {
+            int value = new Randomizer().getIntInRange(20, 30);
+            assertTrue(20 <= value && value <= 30);
+        }
+
+        @Test
+        void withNegativeLimits_returnsValueInRange() {
+            int value = new Randomizer().getIntInRange(-10, -5);
+            assertTrue(-10 <= value && value <= -5);
+        }
+
+        @Test
+        void withEqualLimits_returnsThatValue() {
+            assertEquals(-10, new Randomizer().getIntInRange(-10, -10));
+        }
+
+        @Test
+        void withMaxLesserThanMin_returnsZero() {
+            assertEquals(0, new Randomizer().getIntInRange(-10, -15));
+        }
+    }
+
+    @Nested
+    class GetInts {
+
+        @Test
+        void withCount_returnsCorrectSize() {
+            assertEquals(10, new Randomizer().getInts(10).size());
+        }
+
+        @Test
+        void withCount_containsNoNulls() {
+            assertTrue(new Randomizer().getInts(10).stream().noneMatch(Objects::isNull));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getInts(count).isEmpty());
+        }
+
+        @Test
+        void withCountAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getInts(50, 10).stream().allMatch(v -> 0 <= v && v < 10));
+        }
+
+        @Test
+        void withCountOriginAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getInts(50, -100, 100).stream().allMatch(v -> -100 <= v && v < 100));
+        }
+    }
+
+    @Nested
+    class GetIntsInRange {
+
+        @Test
+        void withCountAndLimits_returnsCorrectSize() {
+            assertEquals(50, new Randomizer().getIntsInRange(50, -5, 5).size());
+        }
+
+        @Test
+        void withCountAndLimits_returnsAllInRange() {
+            assertTrue(new Randomizer().getIntsInRange(50, -5, 5).stream().allMatch(v -> -5 <= v && v <= 5));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getIntsInRange(count, -5, 5).isEmpty());
+        }
+    }
+
+    @Nested
+    class GetLong {
+
+        @Test
+        void withNoArgs_doesNotThrow() {
+            assertDoesNotThrow(() -> new Randomizer().getLong());
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getLong(), new Randomizer(42L).getLong());
+        }
+
+        @Nested
+        class WithBound {
+
+            @Test
+            void withPositiveBound_returnsValueInRange() {
+                long value = new Randomizer().getLong(100L);
+                assertTrue(0L <= value && value < 100L);
+            }
+
+            @ParameterizedTest
+            @ValueSource(longs = {0L, -1L, -100L})
+            void withNonPositiveBound_returnsZero(long bound) {
+                assertEquals(0L, new Randomizer().getLong(bound));
+            }
+        }
+
+        @Nested
+        class WithOrigin {
+
+            @Test
+            void withValidOriginAndBound_returnsValueInRange() {
+                long value = new Randomizer().getLong(-15L, -10L);
+                assertTrue(-15L <= value && value < -10L);
+            }
+
+            @Test
+            void withBoundLesserThanOrigin_returnsZero() {
+                assertEquals(0L, new Randomizer().getLong(-15L, -25L));
+            }
+        }
+    }
+
+    @Nested
+    class GetLongInRange {
+
+        @Test
+        void withNegativeAndPositiveLimits_returnsValueInRange() {
+            long value = new Randomizer().getLongInRange(-5L, 5L);
+            assertTrue(-5L <= value && value <= 5L);
+        }
+
+        @Test
+        void withPositiveLimits_returnsValueInRange() {
+            long value = new Randomizer().getLongInRange(20L, 30L);
+            assertTrue(20L <= value && value <= 30L);
+        }
+
+        @Test
+        void withNegativeLimits_returnsValueInRange() {
+            long value = new Randomizer().getLongInRange(-10L, -5L);
+            assertTrue(-10L <= value && value <= -5L);
+        }
+
+        @Test
+        void withEqualLimits_returnsThatValue() {
+            assertEquals(-10L, new Randomizer().getLongInRange(-10L, -10L));
+        }
+
+        @Test
+        void withMaxLesserThanMin_returnsZero() {
+            assertEquals(0L, new Randomizer().getLongInRange(-10L, -15L));
+        }
+    }
+
+    @Nested
+    class GetLongs {
+
+        @Test
+        void withCount_returnsCorrectSize() {
+            assertEquals(10, new Randomizer().getLongs(10).size());
+        }
+
+        @Test
+        void withCount_containsNoNulls() {
+            assertTrue(new Randomizer().getLongs(10).stream().noneMatch(Objects::isNull));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getLongs(count).isEmpty());
+        }
+
+        @Test
+        void withCountAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getLongs(50, 10).stream().allMatch(v -> 0L <= v && v < 10L));
+        }
+
+        @Test
+        void withCountOriginAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getLongs(50, -100L, 100L).stream().allMatch(v -> -100L <= v && v < 100L));
+        }
+    }
+
+    @Nested
+    class GetLongsInRange {
+
+        @Test
+        void withCountAndLimits_returnsCorrectSize() {
+            assertEquals(50, new Randomizer().getLongsInRange(50, -5L, 5L).size());
+        }
+
+        @Test
+        void withCountAndLimits_returnsAllInRange() {
+            assertTrue(new Randomizer().getLongsInRange(50, -5L, 5L).stream().allMatch(v -> -5L <= v && v <= 5L));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getLongsInRange(count, -5L, 5L).isEmpty());
+        }
+    }
+
+    @Nested
+    class GetFloat {
+
+        @Test
+        void withNoArgs_returnsValueInUnitRange() {
+            float value = new Randomizer().getFloat();
+            assertTrue(0.0F <= value && value <= 1.0F);
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getFloat(), new Randomizer(42L).getFloat());
+        }
+
+        @Nested
+        class WithBound {
+
+            @Test
+            void withPositiveBound_returnsValueInRange() {
+                float value = new Randomizer().getFloat(100.0F);
+                assertTrue(0.0F <= value && value < 100.0F);
+            }
+
+            @ParameterizedTest
+            @ValueSource(floats = {0.0F, -0.001F, -100.0F})
+            void withNonPositiveBound_returnsZero(float bound) {
+                assertEquals(0.0F, new Randomizer().getFloat(bound));
+            }
+        }
+
+        @Nested
+        class WithOrigin {
+
+            @Test
+            void withValidOriginAndBound_returnsValueInRange() {
+                float value = new Randomizer().getFloat(-15.0F, -10.0F);
+                assertTrue(-15.0F <= value && value < -10.0F);
+            }
+
+            @Test
+            void withBoundLesserThanOrigin_returnsZero() {
+                assertEquals(0.0F, new Randomizer().getFloat(-15.0F, -25.0F));
+            }
+        }
+    }
+
+    @Nested
+    class GetFloatInRange {
+
+        @Test
+        void withNegativeAndPositiveLimits_returnsValueInRange() {
+            float value = new Randomizer().getFloatInRange(-5.0F, 5.0F);
+            assertTrue(-5.0F <= value && value <= 5.0F);
+        }
+
+        @Test
+        void withPositiveLimits_returnsValueInRange() {
+            float value = new Randomizer().getFloatInRange(20.0F, 30.0F);
+            assertTrue(20.0F <= value && value <= 30.0F);
+        }
+
+        @Test
+        void withNegativeLimits_returnsValueInRange() {
+            float value = new Randomizer().getFloatInRange(-10.0F, -5.0F);
+            assertTrue(-10.0F <= value && value <= -5.0F);
+        }
+
+        @Test
+        void withEqualLimits_returnsThatValue() {
+            assertEquals(-10.0F, new Randomizer().getFloatInRange(-10.0F, -10.0F));
+        }
+
+        @Test
+        void withMaxLesserThanMin_returnsZero() {
+            assertEquals(0.0F, new Randomizer().getFloatInRange(-10.0F, -15.0F));
+        }
+    }
+
+    @Nested
+    class GetFloats {
+
+        @Test
+        void withCount_returnsCorrectSize() {
+            assertEquals(10, new Randomizer().getFloats(10).size());
+        }
+
+        @Test
+        void withCount_containsNoNulls() {
+            assertTrue(new Randomizer().getFloats(10).stream().noneMatch(Objects::isNull));
+        }
+
+        @Test
+        void withCount_returnsAllInUnitRange() {
+            assertTrue(new Randomizer().getFloats(50).stream().allMatch(v -> 0.0F <= v && v <= 1.0F));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getFloats(count).isEmpty());
+        }
+
+        @Test
+        void withCountAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getFloats(50, 100.0F).stream().allMatch(v -> 0.0F <= v && v < 100.0F));
+        }
+
+        @Test
+        void withCountOriginAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getFloats(50, -15.0F, 10.0F).stream().allMatch(v -> -15.0F <= v && v < 10.0F));
+        }
+    }
+
+    @Nested
+    class GetFloatsInRange {
+
+        @Test
+        void withCountAndLimits_returnsCorrectSize() {
+            assertEquals(50, new Randomizer().getFloatsInRange(50, -2.5F, 11.25F).size());
+        }
+
+        @Test
+        void withCountAndLimits_returnsAllInRange() {
+            assertTrue(new Randomizer().getFloatsInRange(50, -2.5F, 11.25F).stream().allMatch(v -> -2.5F <= v && v <= 11.25F));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getFloatsInRange(count, -2.5F, 11.25F).isEmpty());
+        }
+    }
+
+    @Nested
+    class GetDouble {
+
+        @Test
+        void withNoArgs_returnsValueInUnitRange() {
+            double value = new Randomizer().getDouble();
+            assertTrue(0.0D <= value && value <= 1.0D);
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getDouble(), new Randomizer(42L).getDouble());
+        }
+
+        @Nested
+        class WithBound {
+
+            @Test
+            void withPositiveBound_returnsValueInRange() {
+                double value = new Randomizer().getDouble(100.0D);
+                assertTrue(0.0D <= value && value < 100.0D);
+            }
+
+            @ParameterizedTest
+            @ValueSource(doubles = {0.0D, -0.001D, -100.0D})
+            void withNonPositiveBound_returnsZero(double bound) {
+                assertEquals(0.0D, new Randomizer().getDouble(bound));
+            }
+        }
+
+        @Nested
+        class WithOrigin {
+
+            @Test
+            void withValidOriginAndBound_returnsValueInRange() {
+                double value = new Randomizer().getDouble(-15.0D, -10.0D);
+                assertTrue(-15.0D <= value && value < -10.0D);
+            }
+
+            @Test
+            void withBoundLesserThanOrigin_returnsZero() {
+                assertEquals(0.0D, new Randomizer().getDouble(-15.0D, -25.0D));
+            }
+        }
+    }
+
+    @Nested
+    class GetDoubleInRange {
+
+        @Test
+        void withNegativeAndPositiveLimits_returnsValueInRange() {
+            double value = new Randomizer().getDoubleInRange(-5.0D, 5.0D);
+            assertTrue(-5.0D <= value && value <= 5.0D);
+        }
+
+        @Test
+        void withPositiveLimits_returnsValueInRange() {
+            double value = new Randomizer().getDoubleInRange(20.0D, 30.0D);
+            assertTrue(20.0D <= value && value <= 30.0D);
+        }
+
+        @Test
+        void withNegativeLimits_returnsValueInRange() {
+            double value = new Randomizer().getDoubleInRange(-10.0D, -5.0D);
+            assertTrue(-10.0D <= value && value <= -5.0D);
+        }
+
+        @Test
+        void withEqualLimits_returnsThatValue() {
+            assertEquals(-10.0D, new Randomizer().getDoubleInRange(-10.0D, -10.0D));
+        }
+
+        @Test
+        void withMaxLesserThanMin_returnsZero() {
+            assertEquals(0.0D, new Randomizer().getDoubleInRange(-10.0D, -15.0D));
+        }
+    }
+
+    @Nested
+    class GetDoubles {
+
+        @Test
+        void withCount_returnsCorrectSize() {
+            assertEquals(10, new Randomizer().getDoubles(10).size());
+        }
+
+        @Test
+        void withCount_containsNoNulls() {
+            assertTrue(new Randomizer().getDoubles(10).stream().noneMatch(Objects::isNull));
+        }
+
+        @Test
+        void withCount_returnsAllInUnitRange() {
+            assertTrue(new Randomizer().getDoubles(50).stream().allMatch(v -> 0.0D <= v && v <= 1.0D));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getDoubles(count).isEmpty());
+        }
+
+        @Test
+        void withCountAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getDoubles(50, 10.0D).stream().allMatch(v -> 0.0D <= v && v < 10.0D));
+        }
+
+        @Test
+        void withCountOriginAndBound_returnsAllInRange() {
+            assertTrue(new Randomizer().getDoubles(50, -15.0D, 10.0D).stream().allMatch(v -> -15.0D <= v && v < 10.0D));
+        }
+    }
+
+    @Nested
+    class GetDoublesInRange {
+
+        @Test
+        void withCountAndLimits_returnsCorrectSize() {
+            assertEquals(50, new Randomizer().getDoublesInRange(50, -2.5D, 11.25D).size());
+        }
+
+        @Test
+        void withCountAndLimits_returnsAllInRange() {
+            assertTrue(new Randomizer().getDoublesInRange(50, -2.5D, 11.25D).stream().allMatch(v -> -2.5D <= v && v <= 11.25D));
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, -100})
+        void withNonPositiveCount_returnsEmptyList(int count) {
+            assertTrue(new Randomizer().getDoublesInRange(count, -2.5D, 11.25D).isEmpty());
+        }
+    }
+
+    @Nested
+    class GetGaussian {
+
+        @Test
+        void withNoArgs_returnsFiniteValue() {
+            assertTrue(Double.isFinite(new Randomizer().getGaussian()));
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getGaussian(), new Randomizer(42L).getGaussian());
+        }
+
+        @Test
+        void withMeanAndStdDev_returnsFiniteValue() {
+            assertTrue(Double.isFinite(new Randomizer().getGaussian(10.0D, 2.0D)));
+        }
+
+        @Test
+        void withMeanAndStdDev_clustersAroundMean() {
+            Randomizer r = new Randomizer(0L);
+            double avg = IntStream.range(0, 10_000).mapToDouble(i -> r.getGaussian(50.0D, 5.0D)).average().orElse(Double.NaN);
+            assertTrue(Math.abs(avg - 50.0D) < 1.0D, "Expected average near 50.0 but was " + avg);
+        }
+
+        @Test
+        void withConstraint_returnsValueAtOrBelowBound() {
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).mapToDouble(i -> r.getGaussian(10.0D, 2.0D, 11.5D)).allMatch(v -> v <= 11.5D));
+        }
+    }
+
+    @Nested
+    class GetGaussianInt {
+
+        @Test
+        void withNoArgs_doesNotThrow() {
+            assertDoesNotThrow(() -> new Randomizer().getGaussianInt());
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getGaussianInt(), new Randomizer(42L).getGaussianInt());
+        }
+
+        @Test
+        void withMeanAndStdDev_doesNotThrow() {
+            assertDoesNotThrow(() -> new Randomizer().getGaussianInt(10.0D, 2.0D));
+        }
+
+        @Test
+        void withMeanAndStdDev_clustersAroundMean() {
+            Randomizer r = new Randomizer(0L);
+            double avg = IntStream.range(0, 10_000).mapToDouble(i -> r.getGaussianInt(50.0D, 5.0D)).average().orElse(Double.NaN);
+            assertTrue(Math.abs(avg - 50.0D) < 1.0D, "Expected average near 50.0 but was " + avg);
+        }
+
+        @Test
+        void withConstraint_returnsValueAtOrBelowBound() {
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).map(i -> r.getGaussianInt(10.0D, 2.0D, 11)).allMatch(v -> v <= 11));
+        }
+    }
+
+    @Nested
+    class GetCharBasedOnWeight {
+
+        @Test
+        void withWeightedChars_returnsOneOfTheChars() {
+            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'a' || c == 'b' || c == 'c'));
+        }
+
+        @Test
+        void withWeightedChars_coversAllCharsEventually() {
+            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
+            Randomizer r = new Randomizer();
+            Set<Character> seen = IntStream.range(0, 300).mapToObj(i -> r.getCharBasedOnWeight(weighted)).collect(Collectors.toSet());
+            assertEquals(Set.of('a', 'b', 'c'), seen);
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalSequence() {
+            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
+            Randomizer r1 = new Randomizer(42L);
+            Randomizer r2 = new Randomizer(42L);
+            List<Character> seq1 = IntStream.range(0, 20).mapToObj(i -> r1.getCharBasedOnWeight(weighted)).collect(Collectors.toList());
+            List<Character> seq2 = IntStream.range(0, 20).mapToObj(i -> r2.getCharBasedOnWeight(weighted)).collect(Collectors.toList());
+            assertEquals(seq1, seq2);
+        }
+
+        @Test
+        void withSingleEntry_alwaysReturnsThatChar() {
+            WeightedChar[] weighted = {new WeightedChar('z', 1.0D)};
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'z'));
+        }
+
+        @Test
+        void withFullWeightOnOneChar_alwaysReturnsThatChar() {
+            WeightedChar[] weighted = {new WeightedChar('a', 0.0D), new WeightedChar('b', 1.0D)};
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'b'));
+        }
+    }
+
+    @Nested
+    class GetElement {
+
+        @Nested
+        class FromArray {
+
+            @Test
+            void withStringArray_returnsContainedElement() {
+                String[] values = {"alpha", "beta", "gamma"};
+                assertTrue(List.of(values).contains(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleElementArray_alwaysReturnsThatElement() {
+                String[] values = {"only"};
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v.equals("only")));
+            }
+
+            @Test
+            void withSmallArray_coversAllValuesEventually() {
+                String[] values = {"a", "b", "c"};
+                Randomizer r = new Randomizer();
+                Set<String> seen = IntStream.range(0, 300).mapToObj(i -> r.getElement(values)).collect(Collectors.toSet());
+                assertEquals(Set.of(values), seen);
+            }
+
+            @Test
+            void withSameSeed_returnsIdenticalValue() {
+                String[] values = {"alpha", "beta", "gamma"};
+                assertEquals(new Randomizer(42L).getElement(values), new Randomizer(42L).getElement(values));
+            }
+        }
+
+        @Nested
+        class FromList {
+
+            @Test
+            void withIntegerList_returnsContainedElement() {
+                List<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toList());
+                assertTrue(values.contains(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleElementList_alwaysReturnsThatElement() {
+                List<Integer> values = List.of(42);
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v == 42));
+            }
+
+            @Test
+            void withSameSeed_returnsIdenticalValue() {
+                List<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toList());
+                assertEquals(new Randomizer(42L).getElement(values), new Randomizer(42L).getElement(values));
+            }
+        }
+
+        @Nested
+        class FromSet {
+
+            @Test
+            void withIntegerSet_returnsContainedElement() {
+                Set<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toSet());
+                assertTrue(values.contains(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleElementSet_alwaysReturnsThatElement() {
+                Set<Integer> values = Set.of(99);
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v == 99));
+            }
+        }
+
+        @Nested
+        class FromMap {
+
+            @Test
+            void withIntegerMap_returnsValidKey() {
+                Map<Integer, Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toMap(i -> i, i -> i));
+                assertTrue(values.containsKey(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleEntryMap_alwaysReturnsThatKey() {
+                Map<Integer, Integer> values = Map.of(7, 7);
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v == 7));
+            }
+
+            @Test
+            void withSameSeed_returnsIdenticalKey() {
+                Map<Integer, Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toMap(i -> i, i -> i));
+                assertEquals(new Randomizer(42L).getElement(values), new Randomizer(42L).getElement(values));
+            }
+        }
+    }
+
+    @Nested
+    class GetEnum {
+
+        @Test
+        void withDayOfWeek_returnsValidEnumValue() {
+            assertTrue(List.of(DayOfWeek.values()).contains(new Randomizer().getEnum(DayOfWeek.class)));
+        }
+
+        @Test
+        void withDayOfWeek_coversAllValuesEventually() {
+            Randomizer r = new Randomizer();
+            Set<DayOfWeek> seen = IntStream.range(0, 300).mapToObj(i -> r.getEnum(DayOfWeek.class)).collect(Collectors.toSet());
+            assertEquals(Set.of(DayOfWeek.values()), seen);
+        }
+
+        @Test
+        void withSameSeed_returnsIdenticalValue() {
+            assertEquals(new Randomizer(42L).getEnum(DayOfWeek.class), new Randomizer(42L).getEnum(DayOfWeek.class));
+        }
     }
 }
