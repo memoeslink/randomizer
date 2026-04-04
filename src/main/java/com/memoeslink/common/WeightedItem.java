@@ -1,24 +1,24 @@
 package com.memoeslink.common;
 
-public class WeightedChar {
-    private char value;
+public class WeightedItem<T> {
+    private T value;
     private double weight;
 
-    public WeightedChar() {
-        value = '\0';
+    public WeightedItem() {
+        value = null;
         weight = 0.0D;
     }
 
-    public WeightedChar(char value, double weight) {
+    public WeightedItem(T value, double weight) {
         this.value = value;
         this.weight = weight;
     }
 
-    public char getValue() {
+    public T getValue() {
         return value;
     }
 
-    public void setValue(char value) {
+    public void setValue(T value) {
         this.value = value;
     }
 

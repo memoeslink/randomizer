@@ -308,25 +308,118 @@ public class Randomizer {
         return (int) Math.round(getGaussian(mean, stdDeviation, constraint));
     }
 
-    public char getCharBasedOnWeight(WeightedChar[] weightedChars) {
-        weightedChars = weightedChars != null ? weightedChars : new WeightedChar[]{};
-        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(Arrays.hashCode(weightedChars), 0.0D);
+    private double computeTotalWeight(WeightedItem<?>[] weightedItems, int registryKey) {
+        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(registryKey, 0.0D);
 
         if (completeWeight == 0.0D) {
-            for (WeightedChar c : weightedChars) {
-                completeWeight += c.getWeight();
+            for (WeightedItem<?> item : weightedItems) {
+                completeWeight += item.getWeight();
             }
-            ARRAY_WEIGHT_REGISTRY.put(Arrays.hashCode(weightedChars), completeWeight);
+            ARRAY_WEIGHT_REGISTRY.put(registryKey, completeWeight);
+        }
+        return completeWeight;
+    }
+
+    private <T> T pickFromWeightedItems(WeightedItem<T>[] weightedItems, double completeWeight) {
+        double probability = getDouble() * completeWeight;
+        double weight = 0.0D;
+
+        for (WeightedItem<T> item : weightedItems) {
+            weight += item.getWeight();
+            if (weight > 0.0D && weight >= probability) return item.getValue();
+        }
+        return null;
+    }
+
+    public <T> T getElementBasedOnWeight(WeightedItem<T>[] weightedItems) {
+        if (weightedItems == null || weightedItems.length == 0) return null;
+        int key = System.identityHashCode(weightedItems);
+        double completeWeight = computeTotalWeight(weightedItems, key);
+        return pickFromWeightedItems(weightedItems, completeWeight);
+    }
+
+    public <T> T getElementBasedOnWeight(List<WeightedItem<T>> weightedItems) {
+        if (weightedItems == null || weightedItems.isEmpty()) return null;
+        int key = System.identityHashCode(weightedItems);
+        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(key, 0.0D);
+
+        if (completeWeight == 0.0D) {
+            for (WeightedItem<T> item : weightedItems) {
+                completeWeight += item.getWeight();
+            }
+            ARRAY_WEIGHT_REGISTRY.put(key, completeWeight);
         }
         double probability = getDouble() * completeWeight;
         double weight = 0.0D;
 
-        for (WeightedChar c : weightedChars) {
-            weight += c.getWeight();
-
-            if (weight > 0.0D && weight >= probability) return c.getValue();
+        for (WeightedItem<T> item : weightedItems) {
+            weight += item.getWeight();
+            if (weight > 0.0D && weight >= probability) return item.getValue();
         }
-        return new WeightedChar().getValue();
+        return null;
+    }
+
+    public <T> T getElementBasedOnWeight(Set<WeightedItem<T>> weightedItems) {
+        if (weightedItems == null || weightedItems.isEmpty()) return null;
+        int key = System.identityHashCode(weightedItems);
+        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(key, 0.0D);
+
+        if (completeWeight == 0.0D) {
+            for (WeightedItem<T> item : weightedItems) {
+                completeWeight += item.getWeight();
+            }
+            ARRAY_WEIGHT_REGISTRY.put(key, completeWeight);
+        }
+        double probability = getDouble() * completeWeight;
+        double weight = 0.0D;
+
+        for (WeightedItem<T> item : weightedItems) {
+            weight += item.getWeight();
+            if (weight > 0.0D && weight >= probability) return item.getValue();
+        }
+        return null;
+    }
+
+    public <T, U> U getElementBasedOnWeight(Map<T, WeightedItem<U>> weightedItems) {
+        if (weightedItems == null || weightedItems.isEmpty()) return null;
+        int key = System.identityHashCode(weightedItems);
+        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(key, 0.0D);
+
+        if (completeWeight == 0.0D) {
+            for (WeightedItem<U> item : weightedItems.values()) {
+                completeWeight += item.getWeight();
+            }
+            ARRAY_WEIGHT_REGISTRY.put(key, completeWeight);
+        }
+        double probability = getDouble() * completeWeight;
+        double weight = 0.0D;
+
+        for (Map.Entry<T, WeightedItem<U>> entry : weightedItems.entrySet()) {
+            weight += entry.getValue().getWeight();
+            if (weight > 0.0D && weight >= probability) return entry.getValue().getValue();
+        }
+        return null;
+    }
+
+    public <T extends Enum<?>> T getEnumBasedOnWeight(Map<T, Double> weightedItems) {
+        if (weightedItems == null || weightedItems.isEmpty()) return null;
+        int key = System.identityHashCode(weightedItems);
+        double completeWeight = ARRAY_WEIGHT_REGISTRY.getOrDefault(key, 0.0D);
+
+        if (completeWeight == 0.0D) {
+            for (double w : weightedItems.values()) {
+                completeWeight += w;
+            }
+            ARRAY_WEIGHT_REGISTRY.put(key, completeWeight);
+        }
+        double probability = getDouble() * completeWeight;
+        double weight = 0.0D;
+
+        for (Map.Entry<T, Double> entry : weightedItems.entrySet()) {
+            weight += entry.getValue();
+            if (weight > 0.0D && weight >= probability) return entry.getKey();
+        }
+        return null;
     }
 
     public <T> T getElement(T[] array) {
@@ -341,18 +434,41 @@ public class Randomizer {
 
     public <T> T getElement(Set<T> set) {
         if (set == null || set.isEmpty()) return null;
-        return set.stream().skip(r.nextInt(set.size())).findFirst().orElse(null);
+        int index = r.nextInt(set.size());
+
+        if (set instanceof LinkedHashSet) {
+            for (T item : set) {
+                if (index-- == 0) return item;
+            }
+            return null;
+        }
+        Iterator<T> it = set.iterator();
+
+        for (int i = 0; i < index; i++) it.next();
+        return it.next();
     }
 
     public <T, U> U getElement(Map<T, U> map) {
         if (map == null || map.isEmpty()) return null;
-        List<T> keys = new ArrayList<>(map.keySet());
-        return map.getOrDefault(getElement(keys), null);
+        int index = r.nextInt(map.size());
+
+        if (map instanceof LinkedHashMap) {
+            for (Map.Entry<T, U> entry : map.entrySet()) {
+                if (index-- == 0) return entry.getValue();
+            }
+            return null;
+        }
+        Iterator<Map.Entry<T, U>> it = map.entrySet().iterator();
+
+        for (int i = 0; i < index; i++) it.next();
+        return it.next().getValue();
     }
 
     public <T extends Enum<?>> T getEnum(Class<T> clazz) {
-        if (clazz == null || clazz.getEnumConstants().length == 0) return null;
-        int x = r.nextInt(clazz.getEnumConstants().length);
-        return clazz.getEnumConstants()[x];
+        if (clazz == null) return null;
+        T[] constants = clazz.getEnumConstants();
+
+        if (constants.length == 0) return null;
+        return constants[r.nextInt(constants.length)];
     }
 }

@@ -6,10 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.DayOfWeek;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -666,45 +663,209 @@ class RandomizerTest {
     }
 
     @Nested
-    class GetCharBasedOnWeight {
+    class GetElementBasedOnWeight {
+
+        @Nested
+        class FromArray {
+
+            @Test
+            void withWeightedItems_returnsOneOfTheValues() {
+                WeightedItem<String>[] weighted = new WeightedItem[]{new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D)};
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("alpha") || v.equals("beta") || v.equals("gamma")));
+            }
+
+            @Test
+            void withWeightedItems_coversAllValuesEventually() {
+                WeightedItem<String>[] weighted = new WeightedItem[]{new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D)};
+                Randomizer r = new Randomizer();
+                Set<String> seen = IntStream.range(0, 300).mapToObj(i -> r.getElementBasedOnWeight(weighted)).collect(Collectors.toSet());
+                assertEquals(Set.of("alpha", "beta", "gamma"), seen);
+            }
+
+            @Test
+            void withSingleEntry_alwaysReturnsThatValue() {
+                WeightedItem<String>[] weighted = new WeightedItem[]{new WeightedItem<>("only", 1.0D)};
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("only")));
+            }
+
+            @Test
+            void withFullWeightOnOneItem_alwaysReturnsThatValue() {
+                WeightedItem<String>[] weighted = new WeightedItem[]{new WeightedItem<>("alpha", 0.0D), new WeightedItem<>("beta", 1.0D)};
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("beta")));
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight((WeightedItem<String>[]) null));
+            }
+
+            @Test
+            void withEmptyArray_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight(new WeightedItem[0]));
+            }
+        }
+
+        @Nested
+        class FromList {
+
+            @Test
+            void withWeightedItems_returnsOneOfTheValues() {
+                List<WeightedItem<String>> weighted = List.of(new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D));
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("alpha") || v.equals("beta") || v.equals("gamma")));
+            }
+
+            @Test
+            void withWeightedItems_coversAllValuesEventually() {
+                List<WeightedItem<String>> weighted = List.of(new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D));
+                Randomizer r = new Randomizer();
+                Set<String> seen = IntStream.range(0, 300).mapToObj(i -> r.getElementBasedOnWeight(weighted)).collect(Collectors.toSet());
+                assertEquals(Set.of("alpha", "beta", "gamma"), seen);
+            }
+
+            @Test
+            void withSingleEntry_alwaysReturnsThatValue() {
+                List<WeightedItem<String>> weighted = List.of(new WeightedItem<>("only", 1.0D));
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("only")));
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight((List<WeightedItem<String>>) null));
+            }
+
+            @Test
+            void withEmptyList_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight(new ArrayList<WeightedItem<String>>()));
+            }
+        }
+
+        @Nested
+        class FromSet {
+
+            @Test
+            void withWeightedItems_returnsOneOfTheValues() {
+                Set<WeightedItem<String>> weighted = new LinkedHashSet<>(List.of(new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D)));
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v.equals("alpha") || v.equals("beta") || v.equals("gamma")));
+            }
+
+            @Test
+            void withWeightedItems_coversAllValuesEventually() {
+                Set<WeightedItem<String>> weighted = new LinkedHashSet<>(List.of(new WeightedItem<>("alpha", 0.35D), new WeightedItem<>("beta", 0.4D), new WeightedItem<>("gamma", 0.25D)));
+                Randomizer r = new Randomizer();
+                Set<String> seen = IntStream.range(0, 300).mapToObj(i -> r.getElementBasedOnWeight(weighted)).collect(Collectors.toSet());
+                assertEquals(Set.of("alpha", "beta", "gamma"), seen);
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight((Set<WeightedItem<String>>) null));
+            }
+
+            @Test
+            void withEmptySet_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight(new LinkedHashSet<WeightedItem<String>>()));
+            }
+        }
+
+        @Nested
+        class FromMap {
+
+            @Test
+            void withWeightedItems_returnsOneOfTheValues() {
+                Map<String, WeightedItem<Integer>> weighted = new LinkedHashMap<>();
+                weighted.put("a", new WeightedItem<>(1, 0.35D));
+                weighted.put("b", new WeightedItem<>(2, 0.4D));
+                weighted.put("c", new WeightedItem<>(3, 0.25D));
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v == 1 || v == 2 || v == 3));
+            }
+
+            @Test
+            void withWeightedItems_coversAllValuesEventually() {
+                Map<String, WeightedItem<Integer>> weighted = new LinkedHashMap<>();
+                weighted.put("a", new WeightedItem<>(1, 0.35D));
+                weighted.put("b", new WeightedItem<>(2, 0.4D));
+                weighted.put("c", new WeightedItem<>(3, 0.25D));
+                Randomizer r = new Randomizer();
+                Set<Integer> seen = IntStream.range(0, 300).mapToObj(i -> r.getElementBasedOnWeight(weighted)).collect(Collectors.toSet());
+                assertEquals(Set.of(1, 2, 3), seen);
+            }
+
+            @Test
+            void withSingleEntry_alwaysReturnsThatValue() {
+                Map<String, WeightedItem<Integer>> weighted = new LinkedHashMap<>();
+                weighted.put("a", new WeightedItem<>(42, 1.0D));
+                Randomizer r = new Randomizer();
+                assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getElementBasedOnWeight(weighted)).allMatch(v -> v == 42));
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight((Map<String, WeightedItem<Integer>>) null));
+            }
+
+            @Test
+            void withEmptyMap_returnsNull() {
+                assertNull(new Randomizer().getElementBasedOnWeight(new LinkedHashMap<String, WeightedItem<Integer>>()));
+            }
+        }
+    }
+
+    @Nested
+    class GetEnumBasedOnWeight {
 
         @Test
-        void withWeightedChars_returnsOneOfTheChars() {
-            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
+        void withWeightedEnum_returnsOneOfTheValues() {
+            Map<DayOfWeek, Double> weighted = new LinkedHashMap<>();
+            weighted.put(DayOfWeek.MONDAY, 0.2D);
+            weighted.put(DayOfWeek.WEDNESDAY, 0.5D);
+            weighted.put(DayOfWeek.FRIDAY, 0.3D);
             Randomizer r = new Randomizer();
-            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'a' || c == 'b' || c == 'c'));
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getEnumBasedOnWeight(weighted)).allMatch(v -> v == DayOfWeek.MONDAY || v == DayOfWeek.WEDNESDAY || v == DayOfWeek.FRIDAY));
         }
 
         @Test
-        void withWeightedChars_coversAllCharsEventually() {
-            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
+        void withWeightedEnum_coversAllValuesEventually() {
+            Map<DayOfWeek, Double> weighted = new LinkedHashMap<>();
+            weighted.put(DayOfWeek.MONDAY, 0.2D);
+            weighted.put(DayOfWeek.WEDNESDAY, 0.5D);
+            weighted.put(DayOfWeek.FRIDAY, 0.3D);
             Randomizer r = new Randomizer();
-            Set<Character> seen = IntStream.range(0, 300).mapToObj(i -> r.getCharBasedOnWeight(weighted)).collect(Collectors.toSet());
-            assertEquals(Set.of('a', 'b', 'c'), seen);
+            Set<DayOfWeek> seen = IntStream.range(0, 300).mapToObj(i -> r.getEnumBasedOnWeight(weighted)).collect(Collectors.toSet());
+            assertEquals(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY), seen);
         }
 
         @Test
-        void withSameSeed_returnsIdenticalSequence() {
-            WeightedChar[] weighted = {new WeightedChar('a', 0.35D), new WeightedChar('b', 0.4D), new WeightedChar('c', 0.25D)};
-            Randomizer r1 = new Randomizer(42L);
-            Randomizer r2 = new Randomizer(42L);
-            List<Character> seq1 = IntStream.range(0, 20).mapToObj(i -> r1.getCharBasedOnWeight(weighted)).collect(Collectors.toList());
-            List<Character> seq2 = IntStream.range(0, 20).mapToObj(i -> r2.getCharBasedOnWeight(weighted)).collect(Collectors.toList());
-            assertEquals(seq1, seq2);
+        void withSingleEntry_alwaysReturnsThatValue() {
+            Map<DayOfWeek, Double> weighted = new LinkedHashMap<>();
+            weighted.put(DayOfWeek.TUESDAY, 1.0D);
+            Randomizer r = new Randomizer();
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getEnumBasedOnWeight(weighted)).allMatch(v -> v == DayOfWeek.TUESDAY));
         }
 
         @Test
-        void withSingleEntry_alwaysReturnsThatChar() {
-            WeightedChar[] weighted = {new WeightedChar('z', 1.0D)};
+        void withFullWeightOnOneValue_alwaysReturnsThatValue() {
+            Map<DayOfWeek, Double> weighted = new LinkedHashMap<>();
+            weighted.put(DayOfWeek.MONDAY, 0.0D);
+            weighted.put(DayOfWeek.FRIDAY, 1.0D);
             Randomizer r = new Randomizer();
-            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'z'));
+            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getEnumBasedOnWeight(weighted)).allMatch(v -> v == DayOfWeek.FRIDAY));
         }
 
         @Test
-        void withFullWeightOnOneChar_alwaysReturnsThatChar() {
-            WeightedChar[] weighted = {new WeightedChar('a', 0.0D), new WeightedChar('b', 1.0D)};
-            Randomizer r = new Randomizer();
-            assertTrue(IntStream.range(0, 100).mapToObj(i -> r.getCharBasedOnWeight(weighted)).allMatch(c -> c == 'b'));
+        void withNull_returnsNull() {
+            assertNull(new Randomizer().getEnumBasedOnWeight(null));
+        }
+
+        @Test
+        void withEmptyMap_returnsNull() {
+            assertNull(new Randomizer().getEnumBasedOnWeight(new LinkedHashMap<>()));
         }
     }
 
@@ -769,16 +930,40 @@ class RandomizerTest {
         class FromSet {
 
             @Test
-            void withIntegerSet_returnsContainedElement() {
-                Set<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toSet());
+            void withLinkedHashSet_returnsContainedElement() {
+                Set<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toCollection(LinkedHashSet::new));
                 assertTrue(values.contains(new Randomizer().getElement(values)));
             }
 
             @Test
-            void withSingleElementSet_alwaysReturnsThatElement() {
-                Set<Integer> values = Set.of(99);
+            void withHashSet_returnsContainedElement() {
+                Set<Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toCollection(HashSet::new));
+                assertTrue(values.contains(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleElementLinkedHashSet_alwaysReturnsThatElement() {
+                Set<Integer> values = new LinkedHashSet<>(Set.of(99));
                 Randomizer r = new Randomizer();
                 assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v == 99));
+            }
+
+            @Test
+            void withLinkedHashSet_coversAllValuesEventually() {
+                Set<String> values = new LinkedHashSet<>(List.of("a", "b", "c"));
+                Randomizer r = new Randomizer();
+                Set<String> seen = IntStream.range(0, 300).mapToObj(i -> r.getElement(values)).collect(Collectors.toSet());
+                assertEquals(values, seen);
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElement((Set<Integer>) null));
+            }
+
+            @Test
+            void withEmptySet_returnsNull() {
+                assertNull(new Randomizer().getElement(new LinkedHashSet<Integer>()));
             }
         }
 
@@ -786,22 +971,46 @@ class RandomizerTest {
         class FromMap {
 
             @Test
-            void withIntegerMap_returnsValidKey() {
-                Map<Integer, Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toMap(i -> i, i -> i));
-                assertTrue(values.containsKey(new Randomizer().getElement(values)));
+            void withLinkedHashMap_returnsContainedValue() {
+                Map<Integer, Integer> values = new LinkedHashMap<>();
+                IntStream.rangeClosed(1, 1000).forEach(i -> values.put(i, i));
+                assertTrue(values.containsValue(new Randomizer().getElement(values)));
             }
 
             @Test
-            void withSingleEntryMap_alwaysReturnsThatKey() {
-                Map<Integer, Integer> values = Map.of(7, 7);
+            void withHashMap_returnsContainedValue() {
+                Map<Integer, Integer> values = new HashMap<>();
+                IntStream.rangeClosed(1, 1000).forEach(i -> values.put(i, i));
+                assertTrue(values.containsValue(new Randomizer().getElement(values)));
+            }
+
+            @Test
+            void withSingleEntryLinkedHashMap_alwaysReturnsThatValue() {
+                Map<Integer, Integer> values = new LinkedHashMap<>();
+                values.put(7, 7);
                 Randomizer r = new Randomizer();
                 assertTrue(IntStream.range(0, 20).mapToObj(i -> r.getElement(values)).allMatch(v -> v == 7));
             }
 
             @Test
-            void withSameSeed_returnsIdenticalKey() {
-                Map<Integer, Integer> values = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toMap(i -> i, i -> i));
-                assertEquals(new Randomizer(42L).getElement(values), new Randomizer(42L).getElement(values));
+            void withLinkedHashMap_coversAllValuesEventually() {
+                Map<String, Integer> values = new LinkedHashMap<>();
+                values.put("a", 1);
+                values.put("b", 2);
+                values.put("c", 3);
+                Randomizer r = new Randomizer();
+                Set<Integer> seen = IntStream.range(0, 300).mapToObj(i -> r.getElement(values)).collect(Collectors.toSet());
+                assertEquals(Set.of(1, 2, 3), seen);
+            }
+
+            @Test
+            void withNull_returnsNull() {
+                assertNull(new Randomizer().getElement((Map<Integer, Integer>) null));
+            }
+
+            @Test
+            void withEmptyMap_returnsNull() {
+                assertNull(new Randomizer().getElement(new LinkedHashMap<Integer, Integer>()));
             }
         }
     }
@@ -824,6 +1033,11 @@ class RandomizerTest {
         @Test
         void withSameSeed_returnsIdenticalValue() {
             assertEquals(new Randomizer(42L).getEnum(DayOfWeek.class), new Randomizer(42L).getEnum(DayOfWeek.class));
+        }
+
+        @Test
+        void withNull_returnsNull() {
+            assertNull(new Randomizer().getEnum(null));
         }
     }
 }
